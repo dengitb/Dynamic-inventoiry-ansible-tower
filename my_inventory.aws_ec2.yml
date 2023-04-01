@@ -1,3 +1,35 @@
 plugin: amazon.aws.aws_ec2
+# The values for profile, access key, secret key and token can be hardcoded like:
+boto_profile: aws_profile
+# or you could use Jinja as:
+# boto_profile: "{{ lookup('env', 'AWS_PROFILE') | default('aws_profile', true) }}"
+# Populate inventory with instances in these regions
 regions:
   - us-east-1
+  - us-east-2
+filters:
+  # All instances with their `Environment` tag set to `dev`
+  tag:Environment: dev
+  # All dev and QA hosts
+  tag:Environment:
+    - dev
+    - qa
+  instance.group-id: sg-xxxxxxxx
+# Ignores 403 errors rather than failing
+strict_permissions: False
+# Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying
+# inventory_hostname use compose (see example below).
+hostnames:
+  - tag:Name=Tag1,Name=Tag2  # Return specific hosts only
+  - tag:CustomDNSName
+  - dns-name
+  - name: 'tag:Name=Tag1,Name=Tag2'
+  - name: 'private-ip-address'
+    separator: '_'
+    prefix: 'tag:Name'
+  - name: 'test_literal' # Using literal values for hostname
+    separator: '-'       # Hostname will be aws-test_literal
+    prefix: 'aws'
+
+# Returns all the hostnames for a given instance
+allow_duplicated_hosts: False
